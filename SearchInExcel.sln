@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1433
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchInExcel", "SearchInExcel\SearchInExcel.csproj", "{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD3345AB-F5D3-4D3C-9381-AC34536081D5}
+	EndGlobalSection
+EndGlobal
