@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.1433
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchInExcel", "SearchInExcel\SearchInExcel.csproj", "{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryOfClasses", "LibraryOfClasses\LibraryOfClasses.csproj", "{ECA8D5FA-D978-411E-A365-618E4BA83FEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18F47843-A0CE-46C7-86D5-2BAF5ED7D019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECA8D5FA-D978-411E-A365-618E4BA83FEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECA8D5FA-D978-411E-A365-618E4BA83FEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECA8D5FA-D978-411E-A365-618E4BA83FEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECA8D5FA-D978-411E-A365-618E4BA83FEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
