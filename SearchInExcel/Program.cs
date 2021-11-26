@@ -7,6 +7,8 @@ using LibraryOfClasses;
 using System.Configuration;
 using System.IO;
 using System.Data;
+using System.Diagnostics;
+
 
 namespace SearchInExcel
 {
@@ -17,45 +19,44 @@ namespace SearchInExcel
             string wordForSearch = null;
             string stopWord = "й";
             bool isWork = true;
-            while (isWork)
-            {
-                Console.WriteLine( new string( '-', 100 ) );
-                Console.WriteLine( "Введите децимальный номер для поиска:" );
-                wordForSearch = Console.ReadLine();
-                List<string> resultSearch = SearchWords( wordForSearch );
-                Console.WriteLine($"Нажмите \"{stopWord}\" чтобы завершить работу или любую клавишу чтобы продолжить...");
-                if (Console.ReadLine( ).ToLowerInvariant() == stopWord)
-                {
-                    isWork = false;
-                }
-            }
-        }
-
-        private static List<string> SearchWords(string wordFound )
-        {
-            List<string> resultSearch = new List<string>( );
-            DirectoryInfo rootDir = Directory.CreateDirectory( Directory.GetCurrentDirectory( ) );
-            rootDir.Create( );
-
             try
             {
-                foreach (FileInfo cfile in rootDir.GetFiles( "*.xls", SearchOption.TopDirectoryOnly ))
+                do
                 {
-                    //Console.WriteLine( $"{cfile.FullName}" );
-                    ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet( 
-                        ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile.FullName);
-
-                    Excel.SearchWordInDataSet( wordFound );
-                }
+                    Console.WriteLine( new string( '-', 100 ) );
+                    Console.WriteLine( "Введите децимальный номер для поиска:" );
+                    wordForSearch = Console.ReadLine( );
+                    Stopwatch timer = new Stopwatch( );
+                    timer.Start( );
+                    List<string> resultSearch = SearchInDirectory.Begin( wordForSearch );
+                    PrintList( resultSearch );
+                    timer.Stop( );
+                    Console.WriteLine($"Время поиска: {timer.Elapsed.TotalSeconds:g} секунд");
+                    timer.Reset( );
+                    Console.WriteLine( $"Нажмите \"{stopWord}\" чтобы завершить работу или любую клавишу чтобы продолжить..." );
+                    if (Console.ReadLine( ).ToLowerInvariant( ) == stopWord)
+                    {
+                        isWork = false;
+                    }
+                } while (isWork);
             }
-            catch (Exception e )
+            catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine( e.Message );
             }
-            
-            return resultSearch;
         }
 
+        private static void PrintList( List<string> resultSearch )
+        {
+            Console.WriteLine( new string( '*', 100 ) );
+            foreach (var item in resultSearch)
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine( new string( '*', 100 ) );
+        }
+
+        
         
     }
 }
