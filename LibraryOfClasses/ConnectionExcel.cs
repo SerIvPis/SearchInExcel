@@ -46,10 +46,12 @@ namespace LibraryOfClasses
                 {
                     string sheetName = dr[ "TABLE_NAME" ].ToString( );
 
-                    if (!sheetName.EndsWith("$"))
+                    if ( !( sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ) ))) 
                     {
                         continue;
                     }
+
+                  
 
                     cmd.CommandText = $"SELECT * FROM [{sheetName}]";
 
@@ -72,7 +74,7 @@ namespace LibraryOfClasses
         /// Поиск слова в DataSet
         /// </summary>
         /// <param name="wordFound"></param>
-        public List<string> SearchWordInDataSet( string wordFound )
+       /* public List<string> SearchWordInDataSet( string wordFound )
         {
             List<string> resultList = new List<string>( );
             foreach (DataTable curDt in ExcelFileDataSet.Tables)
@@ -81,9 +83,30 @@ namespace LibraryOfClasses
                 {
                     foreach (var item in dataRow.ItemArray)
                     {
-                        if (item.ToString().Trim().ToLowerInvariant().Equals(wordFound.Trim().ToLowerInvariant()))
+                        if (item.ToString().Trim().ToLowerInvariant().Equals(wordFound.Trim().ToLowerInvariant()
+                            ,StringComparison.InvariantCultureIgnoreCase))
                         {
                             resultList.Add(PrintDataRow( dataRow, curDt, ExcelFileDataSet ));
+                        }
+                    }
+                }
+            }
+            return resultList;
+        }*/
+
+        public List<string> SearchWordInDataSet( string wordFound )
+        {
+            List<string> resultList = new List<string>( );
+            foreach (DataTable curDt in ExcelFileDataSet.Tables)
+            {
+                foreach (DataRow dataRow in curDt.Rows)
+                {
+                    foreach (DataColumn item in curDt.Columns)
+                    {
+                        if (dataRow[item].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
+                            , StringComparison.InvariantCultureIgnoreCase ))
+                        {
+                            resultList.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
                         }
                     }
                 }
@@ -93,11 +116,27 @@ namespace LibraryOfClasses
 
         private string PrintDataRow( DataRow dataRow, DataTable curDt, DataSet excelFileDataSet )
         {
-            string resultStr =  $"[ {Path.GetFileName( excelFileDataSet.DataSetName)} ] [ {curDt.TableName} ] --->\t" +
-                $"{dataRow.ItemArray[6]}\t" +
-                $"{dataRow.ItemArray[ 15 ]}\t" +
-                $"{dataRow.ItemArray[ 21 ]}\t" +
-                $"{dataRow.ItemArray[ 23 ]}" ;
+            string resultStr = null;
+
+            if (curDt.TableName.Contains("список"))
+            {
+               resultStr = $"[ {Path.GetFileName( excelFileDataSet.DataSetName )} ] [ {curDt.TableName} ] --->\t" +
+               $"{dataRow[ "Обозначение" ]}\t" +
+               $"{dataRow[ "Наименование" ]}";
+            }
+            else
+            {
+                resultStr = $"[ {Path.GetFileName( excelFileDataSet.DataSetName )} ] [ {curDt.TableName} ] --->\t" +
+               $"{dataRow[ "Обозначение" ]}\t" +
+               $"{dataRow[ "Наименование" ]}\t" +
+               $"{dataRow[ "Кол#" ]}";
+            }
+            
+            //string resultStr =  $"[ {Path.GetFileName( excelFileDataSet.DataSetName)} ] [ {curDt.TableName} ] --->\t" +
+            //    $"{dataRow.ItemArray[6]}\t" +
+            //    $"{dataRow.ItemArray[ 15 ]}\t" +
+            //    $"{dataRow.ItemArray[ 21 ]}\t" +
+            //    $"{dataRow.ItemArray[ 23 ]}" ;
             //foreach (var item in dataRow.ItemArray)
             //{
             //    //resultStr += $"{item.ToString( )} ";

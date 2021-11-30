@@ -8,13 +8,16 @@ using System.Threading.Tasks;
 
 namespace LibraryOfClasses
 {
+    /// <summary>
+    /// Ищет в *.xls файлах слово
+    /// </summary>
     public class SearchInDirectory
     {
         public static List<string> Begin( string wordFound )
         {
             List<string> resultSearch = new List<string>( ); //Список найденных строк
             DirectoryInfo rootDir = Directory.CreateDirectory( Directory.GetCurrentDirectory( ) );
-            ExtractExcelFiletoDateSet Excel = null;
+            ExtractExcelFiletoDateSet Excel = null;// Объект для отображения файла Excel на DataSet
 
             foreach (FileInfo cfile in rootDir.GetFiles( "*.xls", SearchOption.TopDirectoryOnly ))
             {
