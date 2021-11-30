@@ -19,7 +19,7 @@ namespace LibraryOfClasses
             foreach (FileInfo cfile in rootDir.GetFiles( "*.xls", SearchOption.TopDirectoryOnly ))
             {
                 Excel = new ExtractExcelFiletoDateSet(
-                    ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile.FullName );
+                    ConfigurationManager.ConnectionStrings[ "ExcelHome" ].ConnectionString, cfile.FullName );
 
                 resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
             }
