@@ -8,14 +8,21 @@ using System.Configuration;
 using System.IO;
 using System.Data;
 using System.Diagnostics;
-
+using Serilog.Sinks.File;
+using Serilog;
 
 namespace SearchInExcel
 {
+    
+
     class Program
     {
+       
         static void Main( string[] args )
         {
+           
+
+            Log.Information( "Старт приложения" );
             string wordForSearch = null;
             string stopWord = "й";
             bool isWork = true;
@@ -28,6 +35,7 @@ namespace SearchInExcel
                     wordForSearch = Console.ReadLine( );
                     Stopwatch timer = new Stopwatch( );
                     timer.Start( );
+                    Log.Information( $"Ищем слово -[{wordForSearch}]" );
                     List<string> resultSearch = SearchInDirectory.Begin( wordForSearch );
                     PrintList( resultSearch );
                     timer.Stop( );
@@ -42,6 +50,7 @@ namespace SearchInExcel
             }
             catch (Exception e)
             {
+                Log.Fatal($"Ошибка в {e.StackTrace} - {e.Message}" );
                 Console.WriteLine( e.Message );
             }
         }
