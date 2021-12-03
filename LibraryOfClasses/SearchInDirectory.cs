@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Serilog;
 using Serilog.Sinks.File;
-
+using System.Data;
 
 namespace LibraryOfClasses
 {
@@ -18,69 +18,85 @@ namespace LibraryOfClasses
     /// </summary>
     public class SearchInDirectory
     {
-        public static List<string> Begin( string wordFound )
+        public static DataSet ExcelFileDataSet { get; private set; }
+        public static ConcurrentBag<string> cbResultSearch { get; set; }
+
+        public static void Begin( string wordFound )
         {
             Log.Logger = new LoggerConfiguration( )
                  .WriteTo.File( "logExcel.txt", rollingInterval: RollingInterval.Infinite )
                  .CreateLogger( );
-            List<string> resultSearch = new List<string>( ); //Список найденных строк
-
             string[] files = Directory.GetFiles( Directory.GetCurrentDirectory( ), "*.xls", SearchOption.TopDirectoryOnly );
-            ExtractExcelFiletoDateSet Excel = null;// Объект для отображения файла Excel на DataSet
 
-            ConcurrentBag<string> cbResultSearch = new ConcurrentBag<string>( );
-            List<Task> bagAddTasks = new List<Task>( );
-
+            ExcelFileDataSet = new DataSet( );
+            
+            List<Task> ltask = new List<Task>( );
 
             foreach (string cfile in files)
             {
-                bagAddTasks.Add( Task.Run( ( ) =>
+                ltask.Add( Task.Run( ( ) =>
                 {
-                    //try
-                    //{
-                        Excel = ExcelToTable( cfile );
-                        //ResultToCommon( cbResultSearch, Excel.SearchWordInDataSet( wordFound ) );
-                        Excel.SearchWordInDataSet( wordFound );
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Fatal( $"Ошибка в потоке - {ex.Message}" );
-                    //    Console.WriteLine( ex.Message );
-                    //}
-
-                } ));
-
-                //Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                //Excel = new ExtractExcelFiletoDateSet(
-                //    ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile );
-                //Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                //resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
-                //Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                    Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                    ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
+                        ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile, ExcelFileDataSet );
+                    Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                    // resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
+                    Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                } ) );
             }
-            Task.WaitAll( bagAddTasks.ToArray( ) );
-           // resultSearch.Add( "Заглушка" );
-
-            return resultSearch;
+            Task.WaitAll( ltask.ToArray<Task>( ) );
+            //return cbResultSearch;
         }
 
-        private static void ResultToCommon( ConcurrentBag<string> cbResultSearch, IEnumerable<string> list )
+        public static List<string> SearchWordInDataSet( string wordFound )
         {
-            foreach (var item in list)
+            //List<string> resultList = new List<string>( );
+            cbResultSearch = new ConcurrentBag<string>( );
+            List<Task> ltask = new List<Task>( );
+
+            foreach (DataTable curDt in ExcelFileDataSet.Tables)
             {
-                cbResultSearch.Add( item );
+                    foreach (DataRow dataRow in curDt.Rows)
+                    {
+                        foreach (DataColumn item in curDt.Columns)
+                        {
+                            if (dataRow[ item ].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
+                                , StringComparison.InvariantCultureIgnoreCase ))
+                            {
+                                //cbResultSearch.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
+                                Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
+                            }
+                        }
+                    }
             }
+           
+            return cbResultSearch.ToList<string>();
         }
 
-        private static ExtractExcelFiletoDateSet ExcelToTable( string cfile )
+        private static string PrintDataRow( DataRow dataRow, DataTable curDt, DataSet excelFileDataSet )
         {
-            ExtractExcelFiletoDateSet Excel;
-            Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-            Excel = new ExtractExcelFiletoDateSet(
-                ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile );
-            Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-            //resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
-            Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-            return Excel;
+            string resultStr = null;
+
+            if (curDt.TableName.Contains( "список" ))// Для первого листа "Список"
+            {
+                resultStr = $" [ {curDt.TableName} ] --->\t" +
+                $"{dataRow[ "Обозначение" ]}\t" +
+                $"{dataRow[ "Наименование" ]}";
+            }
+            else if (curDt.Columns.Contains( "Инв# № подл#" ))// Для групповой спецификации
+            {
+                resultStr = $" [ {curDt.TableName} ] --->\t" +
+               $"{dataRow[ "F7" ]}\t" +
+               $"{dataRow[ "Инв# № дубл#" ]}\t";
+            }
+            else  // Для одиночной спецификации
+            {
+                resultStr = $"[ {curDt.TableName} ] --->\t" +
+               $"{dataRow[ "Обозначение" ]}\t" +
+               $"{dataRow[ "Наименование" ]}\t" +
+               $"{dataRow[ "Кол#" ]}";
+            }
+            return resultStr;
         }
     }
 }

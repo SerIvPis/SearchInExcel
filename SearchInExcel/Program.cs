@@ -33,9 +33,10 @@ namespace SearchInExcel
                     Stopwatch timer = new Stopwatch( );
                     timer.Start( );
                     Log.Information( $"Ищем слово -[{wordForSearch}]" );
-                    List<string> resultSearch = null;
-                    resultSearch = SearchInDirectory.Begin( wordForSearch );
-                    PrintList( resultSearch );
+                    IEnumerable<string> resultSearch = null;
+                    SearchInDirectory.Begin( wordForSearch );
+                    //resultSearch = SearchInDirectory.Begin( wordForSearch );
+                    PrintList( SearchInDirectory.SearchWordInDataSet( wordForSearch ) );
                     timer.Stop( );
                     Console.WriteLine($"Время поиска: {timer.Elapsed.TotalSeconds:g} секунд");
                     timer.Reset( );
@@ -53,7 +54,7 @@ namespace SearchInExcel
             }
         }
 
-        private static void PrintList( List<string> resultSearch )
+        private static void PrintList( IEnumerable<string> resultSearch )
         {
             Console.WriteLine( new string( '*', 100 ) );
             foreach (var item in resultSearch)
