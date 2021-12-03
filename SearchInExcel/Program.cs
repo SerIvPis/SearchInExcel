@@ -17,11 +17,8 @@ namespace SearchInExcel
 
     class Program
     {
-       
         static void Main( string[] args )
         {
-           
-
             Log.Information( "Старт приложения" );
             string wordForSearch = null;
             string stopWord = "й";
@@ -36,7 +33,8 @@ namespace SearchInExcel
                     Stopwatch timer = new Stopwatch( );
                     timer.Start( );
                     Log.Information( $"Ищем слово -[{wordForSearch}]" );
-                    List<string> resultSearch = SearchInDirectory.Begin( wordForSearch );
+                    List<string> resultSearch = null;
+                    resultSearch = SearchInDirectory.Begin( wordForSearch );
                     PrintList( resultSearch );
                     timer.Stop( );
                     Console.WriteLine($"Время поиска: {timer.Elapsed.TotalSeconds:g} секунд");
@@ -64,8 +62,5 @@ namespace SearchInExcel
             }
             Console.WriteLine( new string( '*', 100 ) );
         }
-
-        
-        
     }
 }

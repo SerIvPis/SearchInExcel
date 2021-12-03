@@ -20,27 +20,27 @@ namespace LibraryOfClasses
     {
         public string ConnectionString { get; private set; }
         public DataSet ExcelFileDataSet { get; private set; }
-
+        public string FName { get; set; }
 
         public ExtractExcelFiletoDateSet( string connectionString, string fileName )
         {
-           
             ConnectionString = connectionString;
             ExcelFileDataSet = new DataSet( fileName );
-            Parse( fileName );
+            FName = fileName;
+            Parse( );
         }
 
-        private  void Parse( string fileName )
+        private void Parse( )
         {
             //string connectionString = string.Format( "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fileName + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';" );
             OleDbConnectionStringBuilder build = new OleDbConnectionStringBuilder( ConnectionString );
-            build[ "Data Source" ] = fileName;
+            build[ "Data Source" ] = FName;
             
             //DataSet excelDataSet = new DataSet( );
             using (OleDbConnection con = new OleDbConnection( build.ConnectionString ))
             {
                 con.Open( );
-                Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension(fileName)} открыто " );
+                Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
                 OleDbCommand cmd = new OleDbCommand( );
                 cmd.Connection = con;
 
@@ -51,7 +51,6 @@ namespace LibraryOfClasses
                 {
                     string sheetName = dr[ "TABLE_NAME" ].ToString( );
                     
-
                     if ( !( sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ) ))) 
                     {
                         Log.Information( $"\tПропущено\t< {sheetName} >" );
@@ -63,8 +62,7 @@ namespace LibraryOfClasses
                     DataTable dt = new DataTable(  );
                     dt.TableName = sheetName;
 
-
-                   OleDbDataAdapter da = new OleDbDataAdapter( cmd );
+                    OleDbDataAdapter da = new OleDbDataAdapter( cmd );
                     da.Fill( dt );
                     Log.Information( $"\tДобавлена\t< {sheetName} >" );
                     string List_Columns = "";
@@ -77,37 +75,14 @@ namespace LibraryOfClasses
                     con.Close( );
                 }
             }
-            Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( fileName )} закрыто " );
+            Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} закрыто " );
         }
-
-
-
 
         /// <summary>
         /// Поиск слова в DataSet
         /// </summary>
         /// <param name="wordFound"></param>
-        /* public List<string> SearchWordInDataSet( string wordFound )
-         {
-             List<string> resultList = new List<string>( );
-             foreach (DataTable curDt in ExcelFileDataSet.Tables)
-             {
-                 foreach (DataRow dataRow in curDt.Rows)
-                 {
-                     foreach (var item in dataRow.ItemArray)
-                     {
-                         if (item.ToString().Trim().ToLowerInvariant().Equals(wordFound.Trim().ToLowerInvariant()
-                             ,StringComparison.InvariantCultureIgnoreCase))
-                         {
-                             resultList.Add(PrintDataRow( dataRow, curDt, ExcelFileDataSet ));
-                         }
-                     }
-                 }
-             }
-             return resultList;
-         }*/
-
-        public List<string> SearchWordInDataSet( string wordFound )
+        public /*List<string>*/ void SearchWordInDataSet( string wordFound )
         {
             List<string> resultList = new List<string>( );
             foreach (DataTable curDt in ExcelFileDataSet.Tables)
@@ -119,12 +94,13 @@ namespace LibraryOfClasses
                         if (dataRow[item].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
                             , StringComparison.InvariantCultureIgnoreCase ))
                         {
-                            resultList.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
+                            //resultList.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
+                            Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
                         }
                     }
                 }
             }
-            return resultList;
+           // return resultList;
         }
 
         private string PrintDataRow( DataRow dataRow, DataTable curDt, DataSet excelFileDataSet )
@@ -150,16 +126,6 @@ namespace LibraryOfClasses
                $"{dataRow[ "Наименование" ]}\t" +
                $"{dataRow[ "Кол#" ]}";
             }
-
-            /*string resultStr =  $"[ {Path.GetFileName( excelFileDataSet.DataSetName)} ] [ {curDt.TableName} ] --->\t" +
-                $"{dataRow.ItemArray[6]}\t" +
-                $"{dataRow.ItemArray[ 15 ]}\t" +
-                $"{dataRow.ItemArray[ 21 ]}\t" +
-                $"{dataRow.ItemArray[ 23 ]}" ;
-            foreach (var item in dataRow.ItemArray)
-            {
-                resultStr += $"{item.ToString( )} ";
-            }*/
 
             return resultStr;
         }
