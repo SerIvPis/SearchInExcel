@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
+using System.Data.Odbc;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,16 +19,16 @@ namespace LibraryOfClasses
     /// </summary>
     public class ExtractExcelFiletoDateSet
     {
-        public DataSet ExcelFileDataSet { get; private set; }
+        public DataSet ExcelFileDataSet { get; set; }
 
         public string ConnectionString { get; private set; }
        
         public string FName { get; set; }
 
-        public ExtractExcelFiletoDateSet( string connectionString, string fileName, DataSet ExcelFileDataSet )
+        public ExtractExcelFiletoDateSet( string connectionString, string fileName )
         {
             ConnectionString = connectionString;
-            this.ExcelFileDataSet = ExcelFileDataSet;
+            ExcelFileDataSet = new DataSet(Path.GetFileNameWithoutExtension(fileName));
             FName = fileName;
             Parse( );
         }
@@ -36,35 +36,39 @@ namespace LibraryOfClasses
         private void Parse( )
         {
             //string connectionString = string.Format( "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fileName + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';" );
-            OleDbConnectionStringBuilder build = new OleDbConnectionStringBuilder( ConnectionString );
-            build[ "Data Source" ] = FName;
+            OdbcConnectionStringBuilder build = new OdbcConnectionStringBuilder( ConnectionString )
+            {
+                [ "Data Source" ] = FName
+            };
 
-            //DataSet excelDataSet = new DataSet( );
-            using (OleDbConnection con = new OleDbConnection( build.ConnectionString ))
+            using (OdbcConnection con = new OdbcConnection( build.ConnectionString ))
             {
                 con.Open( );
                 Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
-                OleDbCommand cmd = new OleDbCommand( );
+                OdbcCommand cmd = new OdbcCommand( );
                 cmd.Connection = con;
 
-                DataTable dtSheet = con.GetOleDbSchemaTable( OleDbSchemaGuid.Tables, null );
-                Log.Information( $"Получена схема таблиц файла {Path.GetFileNameWithoutExtension( FName )}" );
-                foreach (DataRow dr in dtSheet.Rows)
-                {
-                    string sheetName = dr[ "TABLE_NAME" ].ToString( );
+                DataTable dtSheet = con.GetSchema( "Tables" );//"TABLES"
+               // DisplayData( dtSheet );
 
-                    if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
-                    {
-                        Log.Information( $"\tПропущено\t< {sheetName} >" );
-                        continue;
-                    }
+                Log.Information( $"Получена схема таблиц файла {Path.GetFileNameWithoutExtension( FName )}" );
+                //foreach (DataRow dr in dtSheet.Rows)
+                //{
+                //string sheetName = dr[ "TABLE_NAME" ].ToString( );    
+                string sheetName = @"список$" ;
+
+                    //if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
+                    //{
+                    //    Log.Information( $"\tПропущено\t< {sheetName} >" );
+                    //    continue;
+                    //}
 
                     cmd.CommandText = $"SELECT * FROM [{sheetName}]";
 
                     DataTable dt = new DataTable( );
                     dt.TableName = $"{Path.GetFileNameWithoutExtension( FName )}_{sheetName}";
 
-                    OleDbDataAdapter da = new OleDbDataAdapter( cmd );
+                    OdbcDataAdapter da = new OdbcDataAdapter( cmd );
                     da.Fill( dt );
                     Log.Information( $"\tДобавлена\t< {sheetName} >" );
                     string List_Columns = "";
@@ -75,12 +79,25 @@ namespace LibraryOfClasses
                     Log.Information( List_Columns );
                     ExcelFileDataSet.Tables.Add( dt );
                     con.Close( );
-                }
+                //}
                 Console.WriteLine( $"{FName}" );
             }
         }
+
+
+        private static void DisplayData( System.Data.DataTable table )
+        {
+            foreach (System.Data.DataRow row in table.Rows)
+            {
+                foreach (System.Data.DataColumn col in table.Columns)
+                {
+                    Console.WriteLine( "{0} = {1}", col.ColumnName, row[ col ] );
+                }
+                Console.WriteLine( "============================" );
+            }
+        }
         //Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} закрыто " );
-   /// <summary>
+        /// <summary>
         /// Поиск слова в DataSet
         /// </summary>
         /// <param name="wordFound"></param>

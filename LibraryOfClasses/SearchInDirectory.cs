@@ -18,7 +18,6 @@ namespace LibraryOfClasses
     /// </summary>
     public class SearchInDirectory
     {
-        public static DataSet ExcelFileDataSet { get; private set; }
         public static ConcurrentBag<string> cbResultSearch { get; set; }
 
         public static void Begin( string wordFound )
@@ -28,8 +27,6 @@ namespace LibraryOfClasses
                  .CreateLogger( );
             string[] files = Directory.GetFiles( Directory.GetCurrentDirectory( ), "*.xls", SearchOption.TopDirectoryOnly );
 
-            ExcelFileDataSet = new DataSet( );
-            
             List<Task> ltask = new List<Task>( );
 
             foreach (string cfile in files)
@@ -38,7 +35,7 @@ namespace LibraryOfClasses
                 {
                     Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
                     ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
-                        ConfigurationManager.ConnectionStrings[ "Excel16" ].ConnectionString, cfile, ExcelFileDataSet );
+                        ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile);
                     Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
                     // resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
                     Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
@@ -51,26 +48,27 @@ namespace LibraryOfClasses
         public static List<string> SearchWordInDataSet( string wordFound )
         {
             //List<string> resultList = new List<string>( );
-            cbResultSearch = new ConcurrentBag<string>( );
-            List<Task> ltask = new List<Task>( );
+                  cbResultSearch = new ConcurrentBag<string>( );
+         /* 
+                   foreach (DataTable curDt in ExcelFileDataSet.Tables)
+                   {
+                           foreach (DataRow dataRow in curDt.Rows)
+                           {
+                               foreach (DataColumn item in curDt.Columns)
+                               {
+                                   if (dataRow[ item ].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
+                                       , StringComparison.InvariantCultureIgnoreCase ))
+                                   {
+                                       //cbResultSearch.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
+                                       Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
+                                   }
+                               }
+                           }
+                   }
 
-            foreach (DataTable curDt in ExcelFileDataSet.Tables)
-            {
-                    foreach (DataRow dataRow in curDt.Rows)
-                    {
-                        foreach (DataColumn item in curDt.Columns)
-                        {
-                            if (dataRow[ item ].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
-                                , StringComparison.InvariantCultureIgnoreCase ))
-                            {
-                                //cbResultSearch.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
-                                Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
-                            }
-                        }
-                    }
-            }
-           
+        */
             return cbResultSearch.ToList<string>();
+            
         }
 
         private static string PrintDataRow( DataRow dataRow, DataTable curDt, DataSet excelFileDataSet )
