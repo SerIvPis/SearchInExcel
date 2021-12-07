@@ -33,12 +33,24 @@ namespace LibraryOfClasses
             {
                 ltask.Add( Task.Run( ( ) =>
                 {
-                    Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                    ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
-                        ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile);
-                    Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                    // resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
-                    Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                    try
+                    {
+                        Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                        ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
+                            ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile );
+                        Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                        // resultSearch.AddRange( Excel.SearchWordInDataSet( wordFound ) );
+                        Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Fatal( $"Ошибка в {e.StackTrace} - {e.Message}" );
+                        Console.WriteLine( e.Message );
+                        Console.WriteLine( e.StackTrace );
+
+                    }
+                   
                 } ) );
             }
             Task.WaitAll( ltask.ToArray<Task>( ) );

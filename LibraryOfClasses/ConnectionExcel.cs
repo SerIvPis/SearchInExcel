@@ -35,51 +35,48 @@ namespace LibraryOfClasses
 
         private void Parse( )
         {
-            //string connectionString = string.Format( "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + fileName + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';" );
             OdbcConnectionStringBuilder build = new OdbcConnectionStringBuilder( ConnectionString )
             {
-                [ "Data Source" ] = FName
+                [ "Dbq" ] = FName
             };
 
             using (OdbcConnection con = new OdbcConnection( build.ConnectionString ))
             {
                 con.Open( );
                 Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
+
                 OdbcCommand cmd = new OdbcCommand( );
                 cmd.Connection = con;
-
-                DataTable dtSheet = con.GetSchema( "Tables" );//"TABLES"
-               // DisplayData( dtSheet );
+                var dtSheet = con.GetSchema( OdbcMetaDataCollectionNames.Tables );
+                
+                //DisplayData( dtSheet );
 
                 Log.Information( $"Получена схема таблиц файла {Path.GetFileNameWithoutExtension( FName )}" );
-                //foreach (DataRow dr in dtSheet.Rows)
-                //{
-                //string sheetName = dr[ "TABLE_NAME" ].ToString( );    
-                string sheetName = @"список$" ;
+                foreach (DataRow dr in dtSheet.Rows)
+                {
+                    string sheetName = dr[ "TABLE_NAME" ].ToString( );
 
-                    //if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
-                    //{
-                    //    Log.Information( $"\tПропущено\t< {sheetName} >" );
-                    //    continue;
-                    //}
+                    if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
+                    {
+                        Log.Information( $"\tПропущено\t< {sheetName} >" );
+                        continue;
+                    }
 
                     cmd.CommandText = $"SELECT * FROM [{sheetName}]";
 
+                    OdbcDataAdapter da = new OdbcDataAdapter( cmd );
                     DataTable dt = new DataTable( );
                     dt.TableName = $"{Path.GetFileNameWithoutExtension( FName )}_{sheetName}";
-
-                    OdbcDataAdapter da = new OdbcDataAdapter( cmd );
                     da.Fill( dt );
                     Log.Information( $"\tДобавлена\t< {sheetName} >" );
-                    string List_Columns = "";
-                    foreach (DataColumn item in dt.Columns)
-                    {
-                        List_Columns += $"< {item.ColumnName} >";
-                    }
-                    Log.Information( List_Columns );
+                    //string List_Columns = "";
+                    //foreach (DataColumn item in dt.Columns)
+                    //{
+                    //    List_Columns += $"< {item.ColumnName} >";
+                    //}
+                    //Log.Information( List_Columns );
                     ExcelFileDataSet.Tables.Add( dt );
-                    con.Close( );
-                //}
+                }
                 Console.WriteLine( $"{FName}" );
             }
         }
