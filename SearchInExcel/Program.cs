@@ -23,12 +23,12 @@ namespace SearchInExcel
             string wordForSearch = null;
             string stopWord = "й";
             //string cfile = @"d:\6ДМ-086.xls";
-            bool isWork = true;
             //ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
-            //            ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile );
-
-             try
-             {
+            //  ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile );
+            bool isWork = true;
+            SearchInDirectory search = new SearchInDirectory( );
+            try
+            {
                  do
                  {
                      Console.WriteLine( new string( '-', 100 ) );
@@ -37,11 +37,11 @@ namespace SearchInExcel
                      Stopwatch timer = new Stopwatch( );
                      timer.Start( );
                      Log.Information( $"Ищем слово -[{wordForSearch}]" );
-                     IEnumerable<string> resultSearch = null;
-                     SearchInDirectory.Begin( wordForSearch );
+                     IEnumerable<string> resultSearch = SearchInDirectory.resultSearchList;
+                    search.Begin( wordForSearch );
                      
                      //resultSearch = SearchInDirectory.Begin( wordForSearch );
-                     //PrintList( SearchInDirectory.SearchWordInDataSet( wordForSearch ) );
+                     PrintList( resultSearch );
                      timer.Stop( );
                      Console.WriteLine($"Время поиска: {timer.Elapsed.TotalSeconds:g} секунд");
                      timer.Reset( );
@@ -56,6 +56,7 @@ namespace SearchInExcel
              {
                  Log.Fatal($"Ошибка в {e.StackTrace} - {e.Message}" );
                  Console.WriteLine( e.Message );
+                Console.ReadLine( );
              }
         }
 

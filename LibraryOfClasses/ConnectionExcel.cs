@@ -28,13 +28,15 @@ namespace LibraryOfClasses
         public ExtractExcelFiletoDateSet( string connectionString, string fileName )
         {
             ConnectionString = connectionString;
-            ExcelFileDataSet = new DataSet(Path.GetFileNameWithoutExtension(fileName));
+            //ExcelFileDataSet = new DataSet(Path.GetFileNameWithoutExtension(fileName));
             FName = fileName;
-            Parse( );
+            ExcelFileDataSet = Parse( );
         }
 
-        private void Parse( )
+        private DataSet Parse( )
         {
+            DataSet result = new DataSet( Path.GetFileNameWithoutExtension( FName ));
+
             OdbcConnectionStringBuilder build = new OdbcConnectionStringBuilder( ConnectionString )
             {
                 [ "Dbq" ] = FName
@@ -42,7 +44,11 @@ namespace LibraryOfClasses
 
             using (OdbcConnection con = new OdbcConnection( build.ConnectionString ))
             {
+                Log.Information( $"перед con.Open() Connection state = {con.State}" );
+                con.ConnectionTimeout = 60;
                 con.Open( );
+                Log.Information( $"после con.Open() Connection state = {con.State}" );
+
                 Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
 
                 OdbcCommand cmd = new OdbcCommand( );
@@ -75,10 +81,12 @@ namespace LibraryOfClasses
                     //    List_Columns += $"< {item.ColumnName} >";
                     //}
                     //Log.Information( List_Columns );
-                    ExcelFileDataSet.Tables.Add( dt );
+                    result.Tables.Add( dt );
                 }
-                Console.WriteLine( $"{FName}" );
             }
+
+            Console.WriteLine( $"{FName}" );
+            return result;
         }
 
 
