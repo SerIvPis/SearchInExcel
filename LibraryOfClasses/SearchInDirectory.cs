@@ -32,37 +32,35 @@ namespace LibraryOfClasses
 
             List<Task> ltask = new List<Task>( );
             resultSearchList.Clear();
-            foreach (string cfile in files)
+            Parallel.ForEach( files, cfile =>
             {
-                ltask.Add( Task.Run( ( ) =>
-                {
-                    try
-                    {
-                        Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                        Stopwatch timer = new Stopwatch( );
-                        timer.Start( );
-                        ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
-                            ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile );
-                        Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
-                        resultSearchList.AddRange( Excel.SearchWordInDataSet( wordFound ) );
-                        timer.Stop( );
-                        Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" +
-                            $"Время поиска: { timer.Elapsed.TotalSeconds:g}сек." +
-                            $"" );
+                //Console.WriteLine($"поток = {Thread.CurrentThread.Name}");
+                 try
+                 {
+                     Log.Information( $"Файл-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                     Stopwatch timer = new Stopwatch( );
+                     timer.Start( );
+                     ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
+                        ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile,wordFound );
+                     Log.Information( $"Импорт данных из файла-< {Path.GetFileNameWithoutExtension( cfile )} >" );
+                     resultSearchList.AddRange( Excel.SearchWordInDataSet( wordFound ) );
+                     timer.Stop( );
+                     Log.Information( $"Поиск завершен-< {Path.GetFileNameWithoutExtension( cfile )} >" +
+                        $"Время поиска: { timer.Elapsed.TotalSeconds:g}сек." +
+                        $"" );
 
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Fatal( $"Ошибка в {e.StackTrace} - {e.Message}" );
-                        Console.WriteLine( e.Message );
-                        Console.WriteLine( e.StackTrace );
+                 }
+                 catch (Exception e)
+                 {
+                     Log.Fatal( $"Ошибка в {e.StackTrace} - {e.Message}" );
+                     Console.WriteLine( e.Message );
+                     //Console.WriteLine( e.StackTrace );
 
-                    }
+                 }
+            } );
                    
-                } ) );
-            }
-            Task.WaitAll( ltask.ToArray<Task>( ) );
-            //return cbResultSearch;
+               
+            
         }
        
                 //public static List<string> SearchWordInDataSet( string wordFound )

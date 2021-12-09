@@ -24,16 +24,25 @@ namespace LibraryOfClasses
         public string ConnectionString { get; private set; }
        
         public string FName { get; set; }
+        public string world = "";
 
         public ExtractExcelFiletoDateSet( string connectionString, string fileName )
         {
             ConnectionString = connectionString;
-            //ExcelFileDataSet = new DataSet(Path.GetFileNameWithoutExtension(fileName));
             FName = fileName;
-            ExcelFileDataSet = Parse( );
+            Parse( );
         }
 
-        private DataSet Parse( )
+        public ExtractExcelFiletoDateSet( string connectionString, string fileName, string world )
+        {
+            ConnectionString = connectionString;
+            FName = fileName;
+            this.world = world;
+            Parse( );
+        }
+
+        //private DataSet Parse( )
+        private  void Parse( )
         {
             DataSet result = new DataSet( Path.GetFileNameWithoutExtension( FName ));
 
@@ -42,53 +51,123 @@ namespace LibraryOfClasses
                 [ "Dbq" ] = FName
             };
 
-            using (OdbcConnection con = new OdbcConnection( build.ConnectionString ))
+            try
             {
-                Log.Information( $"перед con.Open() Connection state = {con.State}" );
-                con.ConnectionTimeout = 60;
-                con.Open( );
-                Log.Information( $"после con.Open() Connection state = {con.State}" );
-
-                Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
-
-                OdbcCommand cmd = new OdbcCommand( );
-                cmd.Connection = con;
-                var dtSheet = con.GetSchema( OdbcMetaDataCollectionNames.Tables );
-                
-                //DisplayData( dtSheet );
-
-                Log.Information( $"Получена схема таблиц файла {Path.GetFileNameWithoutExtension( FName )}" );
-                foreach (DataRow dr in dtSheet.Rows)
+                using (OdbcConnection con = new OdbcConnection( build.ConnectionString ))
                 {
-                    string sheetName = dr[ "TABLE_NAME" ].ToString( );
-
-                    if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
+                    using (var cmd = con.CreateCommand( ))
                     {
-                        Log.Information( $"\tПропущено\t< {sheetName} >" );
-                        continue;
+                        Log.Information( $"перед con.Open() Connection state = {con.State}" );
+                        con.ConnectionTimeout = 0;
+                        //await con.OpenAsync( );
+                        con.Open( );
+                        Log.Information( $"после con.Open() Connection state = {con.State}" );
+
+                        Log.Information( $"Соединение с файлом {Path.GetFileNameWithoutExtension( FName )} открыто " );
+
+                        //OdbcCommand cmd = new OdbcCommand( );
+
+                        var dtSheet = con.GetSchema( OdbcMetaDataCollectionNames.Tables );
+
+                        //DisplayData( dtSheet );
+
+                        Log.Information( $"Получена схема таблиц файла {Path.GetFileNameWithoutExtension( FName )}" );
+                        foreach (DataRow dr in dtSheet.Rows)
+                        {
+                            string sheetName = dr[ "TABLE_NAME" ].ToString( );
+
+                            if (!(sheetName.EndsWith( "$" ) | (sheetName.EndsWith( "$'" ))))
+                            {
+                                Log.Information( $"\tПропущено\t< {sheetName} >" );
+                                continue;
+                            }
+
+                            cmd.CommandText = $"SELECT * FROM [{sheetName}]";
+
+                            using (OdbcDataReader reader = cmd.ExecuteReader( ))
+                            {
+                                while (reader.Read( ))
+                                {
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        if (reader.GetValue( i ).ToString( ).Trim( ).ToLowerInvariant( ).Equals( world.Trim( ).ToLowerInvariant( )
+                                                 , StringComparison.InvariantCultureIgnoreCase ))
+                                        {
+                                            Console.WriteLine( PrintRow( reader, sheetName ) );
+                                        }
+
+                                    }
+                                }
+
+                            }
+
+                            //OdbcDataAdapter da = new OdbcDataAdapter( cmd );
+                            //DataTable dt = new DataTable( );
+                            //dt.TableName = $"{Path.GetFileNameWithoutExtension( FName )}_{sheetName}";
+                            //da.Fill( dt );
+                            Log.Information( $"\tДобавлена\t< {sheetName} >" );
+                            //string List_Columns = "";
+                            //foreach (DataColumn item in dt.Columns)
+                            //{
+                            //    List_Columns += $"< {item.ColumnName} >";
+                            //}
+                            //Log.Information( List_Columns );
+                            //  result.Tables.Add( dt );
+                        }
+
                     }
 
-                    cmd.CommandText = $"SELECT * FROM [{sheetName}]";
-
-                    OdbcDataAdapter da = new OdbcDataAdapter( cmd );
-                    DataTable dt = new DataTable( );
-                    dt.TableName = $"{Path.GetFileNameWithoutExtension( FName )}_{sheetName}";
-                    da.Fill( dt );
-                    Log.Information( $"\tДобавлена\t< {sheetName} >" );
-                    //string List_Columns = "";
-                    //foreach (DataColumn item in dt.Columns)
-                    //{
-                    //    List_Columns += $"< {item.ColumnName} >";
-                    //}
-                    //Log.Information( List_Columns );
-                    result.Tables.Add( dt );
                 }
-            }
 
-            Console.WriteLine( $"{FName}" );
-            return result;
+                Console.WriteLine( $"{FName}" );
+                ExcelFileDataSet = result;
+
+            }
+            catch (Exception e)
+            {
+
+                Log.Fatal( $"Ошибка в {e.StackTrace} - {e.Message}" );
+                Console.WriteLine( e.Message );
+                //Console.WriteLine( e.StackTrace );
+            }
+            
+            //return result;
         }
 
+       
+
+        private string PrintRow( OdbcDataReader reader, string sheetName )
+        {
+            StringBuilder result = new StringBuilder( );
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                result.Append( reader.GetValue( i ).ToString() );
+            }
+            
+            //if (sheetName.Contains( "список" ))// Для первого листа "Список"
+            //{
+            //    resultStr = $"[ {Path.GetFileName( excelFileDataSet.DataSetName )} ] [ {curDt.TableName} ] --->\t" +
+            //    $"{dataRow[ "Обозначение" ]}\t" +
+            //    $"{dataRow[ "Наименование" ]}";
+            //}
+            //else if (sheetName.Contains( "Инв# № подл#" ))// Для групповой спецификации
+            //{
+            //    resultStr = $"[ {Path.GetFileName( excelFileDataSet.DataSetName )} ] [ {curDt.TableName} ] --->\t" +
+            //   $"{dataRow[ "F7" ]}\t" +
+            //   $"{dataRow[ "Инв# № дубл#" ]}\t";
+            //}
+            //else  // Для одиночной спецификации
+            //{
+            //    resultStr = $"[ {Path.GetFileName( excelFileDataSet.DataSetName )} ] [ {curDt.TableName} ] --->\t" +
+            //   $"{dataRow[ "Обозначение" ]}\t" +
+            //   $"{dataRow[ "Наименование" ]}\t" +
+            //   $"{dataRow[ "Кол#" ]}";
+            //}
+
+            return result.ToString();
+        }
+
+       
 
         private static void DisplayData( System.Data.DataTable table )
         {
@@ -108,23 +187,36 @@ namespace LibraryOfClasses
         /// <param name="wordFound"></param>
         public List<string> SearchWordInDataSet( string wordFound )
         {
+
             List<string> resultList = new List<string>( );
-            foreach (DataTable curDt in ExcelFileDataSet.Tables)
+            try
             {
-                foreach (DataRow dataRow in curDt.Rows)
+                foreach (DataTable curDt in ExcelFileDataSet.Tables)
                 {
-                    foreach (DataColumn item in curDt.Columns)
+                    foreach (DataRow dataRow in curDt.Rows)
                     {
-                        if (dataRow[item].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
-                            , StringComparison.InvariantCultureIgnoreCase ))
+                        foreach (DataColumn item in curDt.Columns)
                         {
-                            resultList.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
-                            //Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
+                            if (dataRow[ item ].ToString( ).Trim( ).ToLowerInvariant( ).Equals( wordFound.Trim( ).ToLowerInvariant( )
+                                , StringComparison.InvariantCultureIgnoreCase ))
+                            {
+                                resultList.Add( PrintDataRow( dataRow, curDt, ExcelFileDataSet ) );
+                                //Console.WriteLine($"{PrintDataRow( dataRow, curDt, ExcelFileDataSet )}");
+                            }
                         }
                     }
                 }
+                return resultList;
             }
-            return resultList;
+            catch (Exception e)
+            {
+                
+                Log.Fatal( $"Ошибка в {e.StackTrace} - {e.Message}" );
+                Console.WriteLine($"{e.Message} метод {e.TargetSite}" );
+                return resultList;
+
+            }
+           
         }
 
         private string PrintDataRow( DataRow dataRow, DataTable curDt, DataSet excelFileDataSet )
