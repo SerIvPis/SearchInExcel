@@ -15,11 +15,8 @@ using System.Data.Odbc;
 
 namespace SearchInExcel
 {
-    
-
     class Program
     {
-        
         public static void Main( string[] args )
         {
             Log.Logger = new LoggerConfiguration( )
@@ -34,14 +31,12 @@ namespace SearchInExcel
             Console.WriteLine( new string( '-', 100 ));
 
             // Создаем потокозащещенную коллекцию для хранения импортированных таблиц из excel
-            //ConcurrentBag<DataTable> listTables = new ConcurrentBag<DataTable>();
             List<DataTable> listTables = new List<DataTable>();
 
             //Просмотр файлов в каталоге
             string[] files = Directory.GetFiles( Path.Combine(Directory.GetCurrentDirectory( ), "Files"), "*.xls", SearchOption.TopDirectoryOnly );
             string connectionString =
                ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString;
-            ParallelOptions parallelOptions = new ParallelOptions( );
             Parallel.ForEach( files, cfile =>
             {
                 try
@@ -95,52 +90,7 @@ namespace SearchInExcel
             //}
             Console.ReadLine( );
         }
-
-        /*
-        static void Main( string[] args )
-        {
-            Log.Information( "Старт приложения" );
-            string wordForSearch = null;
-            string stopWord = "й";
-            //string cfile = @"d:\6ДМ-086.xls";
-            //ExtractExcelFiletoDateSet Excel = new ExtractExcelFiletoDateSet(
-            //  ConfigurationManager.ConnectionStrings[ "ExcelODBC" ].ConnectionString, cfile );
-            bool isWork = true;
-            SearchInDirectory search = new SearchInDirectory( );
-            try
-            {
-                 do
-                 {
-                     Console.WriteLine( new string( '-', 100 ) );
-                     Console.WriteLine( "Введите децимальный номер для поиска:" );
-                     wordForSearch = Console.ReadLine( );
-                     Stopwatch timer = new Stopwatch( );
-                     timer.Start( );
-                     Log.Information( $"Ищем слово -[{wordForSearch}]" );
-                     IEnumerable<string> resultSearch = SearchInDirectory.resultSearchList;
-                     search.Begin( wordForSearch );
-                     
-                     //resultSearch = SearchInDirectory.Begin( wordForSearch );
-                     //PrintList( resultSearch );
-                     timer.Stop( );
-                     Console.WriteLine($"Время поиска: {timer.Elapsed.TotalSeconds:g} секунд");
-                     timer.Reset( );
-                     Console.WriteLine( $"Нажмите \"{stopWord}\" чтобы завершить работу или любую клавишу чтобы продолжить..." );
-                     if (Console.ReadLine( ).ToLowerInvariant( ) == stopWord)
-                     {
-                         isWork = false;
-                     }
-                 } while (isWork);
-             }
-             catch (Exception e)
-             {
-                 Log.Fatal($"Ошибка в {e.StackTrace} - {e.Message}" );
-                 //Console.WriteLine( e.Message );
-                 //Console.ReadLine( );
-             }
-        }
-        */
-
+       
         public static List<string> SearchWordInDataSet( IEnumerable<DataTable> listTables, string wordFound )
         {
             List<string> resultList = new List<string>( );
@@ -173,7 +123,6 @@ namespace SearchInExcel
             }
         }
 
-
         private static string PrintDataRow( DataRow dataRow, DataTable curDt )
         {
             string resultStr = null;
@@ -200,16 +149,15 @@ namespace SearchInExcel
 
             return resultStr;
         }
-
-
-        private static void PrintList( IEnumerable<string> resultSearch )
-        {
-            Console.WriteLine( new string( '*', 100 ) );
-            foreach (var item in resultSearch)
-            {
-                Console.WriteLine(item);
-            }
-            Console.WriteLine( new string( '*', 100 ) );
-        }
+        
+       private static void PrintList( IEnumerable<string> resultSearch )
+       {
+           Console.WriteLine( new string( '*', 100 ) );
+           foreach (var item in resultSearch)
+           {
+               Console.WriteLine(item);
+           }
+           Console.WriteLine( new string( '*', 100 ) );
+       }
     }
 }

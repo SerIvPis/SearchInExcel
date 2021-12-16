@@ -53,10 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectionExcel.cs" />
     <Compile Include="ExcelDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SearchInDirectory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

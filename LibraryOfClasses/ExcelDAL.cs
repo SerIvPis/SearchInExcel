@@ -17,9 +17,7 @@ namespace LibraryOfClasses
 
         public ExcelDAL( )
         {
-            //Log.Logger = new LoggerConfiguration( )
-            //    .WriteTo.File( "logExcel.txt", rollingInterval: RollingInterval.Minute )
-            //    .CreateLogger( );
+           
         }
         public void OpenConnection( string connectionString )
         {
@@ -71,7 +69,6 @@ namespace LibraryOfClasses
             //Console.WriteLine($"\t добавлена --> {sheetName}");
             return dataTable;
         }
-
 
     }
 }
